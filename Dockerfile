@@ -27,6 +27,8 @@ RUN apt-get -y update; apt-get -y install \
 RUN cd streamlit_feedback/frontend && npm install react-scripts --save
 RUN cd streamlit_feedback/frontend && npm run build
 
+ARG GEMINI_APIKEY
+ENV GEMINI_APIKEY=${GEMINI_APIKEY}
 ENV PROTOCOL_BUFFERS_PYTHON_IMPLEMENTATION=python
 
 # Install any needed packages specified in requirements.txt

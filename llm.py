@@ -20,15 +20,7 @@ class GoogleRequest:
             google_models.extend(google_stream_models)
             if model_id not in google_models:
                 return f"Sorry {model_id} is not currently supported."
-
-            api_key_path = ".google_api_key.txt"
-            if platform.system() == 'Windows':
-                api_key_path = api_key_path.split('/')
-                api_key_path = os.path.join(PROJECT_ROOT_DIR, *api_key_path)
-            else:
-                api_key_path = os.path.join(PROJECT_ROOT_DIR, api_key_path)
-            with open(api_key_path, 'r') as f:
-                access_token = f.read().rstrip()
+            access_token = os.getenv("GEMINI_APIKEY")
             if not access_token:
                 return "Error 401: No Google API-KEY saved."
             url = f"https://generativelanguage.googleapis.com/v1beta/models/{model_id}:generateContent?key={access_token}"

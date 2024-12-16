@@ -7,7 +7,7 @@ import pandas as pd
 from semantic_router import Route
 from semantic_router.encoders import BaseEncoder, HuggingFaceEncoder
 from semantic_router.layer import RouteLayer
-from encoders import TextEmbeddingGecko, BAAICrossEncoder, BAAILLMEmbedder
+from encoders import TextEmbeddingGecko
 PROJECT_ROOT_DIR = str(Path(__file__).parent)  # set project root directory
 
 
@@ -51,38 +51,38 @@ class MsMarcoMiniLML6V2Router(HuggingFaceEncoder):
     score_threshold: float = 0.95
 
 
-class BAAICrossEncoderRouter(BaseEncoder):
-    client: Optional[Any] = None
-    type: str = "baaicrossencoder"
-
-    def __init__(
-            self,
-            name: Optional[str] = type,
-            score_threshold: float = 0.75,
-    ):
-        super().__init__(name=name, score_threshold=score_threshold)
-        self.client = BAAICrossEncoder()
-
-    def __call__(self, docs: List[str]) -> List[List[float]]:
-        predictions = [self.client.encode(doc) for doc in docs]
-        return predictions
-
-
-class BAAILLMEmbedderRouter(BaseEncoder):
-    client: Optional[Any] = None
-    type: str = "baaillmembedder"
-
-    def __init__(
-        self,
-        name: Optional[str] = type,
-        score_threshold: float = 0.75,
-    ):
-        super().__init__(name=name, score_threshold=score_threshold)
-        self.client = BAAILLMEmbedder()
-
-    def __call__(self, docs: List[str]) -> List[List[float]]:
-        predictions = [self.client.encode(doc) for doc in docs]
-        return predictions
+# class BAAICrossEncoderRouter(BaseEncoder):
+#     client: Optional[Any] = None
+#     type: str = "baaicrossencoder"
+#
+#     def __init__(
+#             self,
+#             name: Optional[str] = type,
+#             score_threshold: float = 0.75,
+#     ):
+#         super().__init__(name=name, score_threshold=score_threshold)
+#         self.client = BAAICrossEncoder()
+#
+#     def __call__(self, docs: List[str]) -> List[List[float]]:
+#         predictions = [self.client.encode(doc) for doc in docs]
+#         return predictions
+#
+#
+# class BAAILLMEmbedderRouter(BaseEncoder):
+#     client: Optional[Any] = None
+#     type: str = "baaillmembedder"
+#
+#     def __init__(
+#         self,
+#         name: Optional[str] = type,
+#         score_threshold: float = 0.75,
+#     ):
+#         super().__init__(name=name, score_threshold=score_threshold)
+#         self.client = BAAILLMEmbedder()
+#
+#     def __call__(self, docs: List[str]) -> List[List[float]]:
+#         predictions = [self.client.encode(doc) for doc in docs]
+#         return predictions
 
 
 class SemanticRouter:

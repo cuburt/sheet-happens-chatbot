@@ -6,7 +6,7 @@ from langchain.callbacks.manager import CallbackManagerForRetrieverRun, AsyncCal
 from langchain_core.retrievers import BaseRetriever, Document
 from langchain_community.document_transformers import LongContextReorder
 from langchain_community.vectorstores import FAISS
-from encoders import MsMarcoMiniLML6V2, BAAILLMEmbedder, BAAICrossEncoder
+from encoders import MsMarcoMiniLML6V2
 PROJECT_ROOT_DIR = str(Path(__file__).parent)
 
 
@@ -28,7 +28,7 @@ class RetrieverFactory(BaseRetriever):
     """Type of search to perform. Defaults to "similarity"."""
     k: int = 5
     skip_longcontext_reorder: bool = False
-    cross_encoder = BAAILLMEmbedder()
+    cross_encoder = MsMarcoMiniLML6V2()
 
     def _get_relevant_documents(
             self, query: str, *, run_manager: CallbackManagerForRetrieverRun

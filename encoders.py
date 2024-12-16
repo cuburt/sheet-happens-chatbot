@@ -42,38 +42,38 @@ class AllMiniLML6V2(SentenceTransformer):
         super().__init__('sentence-transformers/all-MiniLM-L6-v2')
 
 
-class BAAILLMEmbedder(SentenceTransformer):
-    def __init__(self):
-        device = "cuda" if torch.cuda.is_available() else "cpu"
-        logging.info(f"Running on {device}")
-        model_path = os.path.join(PROJECT_ROOT_DIR, 'models', 'BAAI', 'llm-embedder')
-        if not os.path.exists(os.path.join(model_path, "config.json")):
-            model_path = "BAAI/llm-embedder"
-        super().__init__(model_path, device=device)
-
-    def predict(self, pairs):
-        query_embeddings = self.encode([p[0] for p in pairs], normalize_embeddings=True)
-        doc_embeddings = self.encode([p[1] for p in pairs], normalize_embeddings=True)
-        scores = []
-        for q_emb, d_emb in zip(query_embeddings, doc_embeddings):
-            similarity = cosine_similarity([q_emb], [d_emb])[0][0] * 100
-            scores.append(similarity)
-        return scores
-
-
-class BAAICrossEncoder(SentenceTransformer):
-    def __init__(self):
-        super().__init__("BAAI/bge-multilingual-gemma2", model_kwargs={"torch_dtype": torch.float16})
-
-    def predict(self, pairs):
-        instruction = 'Given a web search query, retrieve relevant passages that answer the query.'
-        prompt = f'<instruct>{instruction}\n<query>'
-        # Compute the query and document embeddings
-        query_embeddings = self.encode([p[0] for p in pairs], prompt=prompt)
-        doc_embeddings = self.encode([p[1] for p in pairs])
-        # Compute the cosine similarity between the query and document embeddings
-        similarities = self.similarity(query_embeddings, doc_embeddings)
-        return similarities.tolist()
+# class BAAILLMEmbedder(SentenceTransformer):
+#     def __init__(self):
+#         device = "cuda" if torch.cuda.is_available() else "cpu"
+#         logging.info(f"Running on {device}")
+#         model_path = os.path.join(PROJECT_ROOT_DIR, 'models', 'BAAI', 'llm-embedder')
+#         if not os.path.exists(os.path.join(model_path, "config.json")):
+#             model_path = "BAAI/llm-embedder"
+#         super().__init__(model_path, device=device)
+#
+#     def predict(self, pairs):
+#         query_embeddings = self.encode([p[0] for p in pairs], normalize_embeddings=True)
+#         doc_embeddings = self.encode([p[1] for p in pairs], normalize_embeddings=True)
+#         scores = []
+#         for q_emb, d_emb in zip(query_embeddings, doc_embeddings):
+#             similarity = cosine_similarity([q_emb], [d_emb])[0][0] * 100
+#             scores.append(similarity)
+#         return scores
+#
+#
+# class BAAICrossEncoder(SentenceTransformer):
+#     def __init__(self):
+#         super().__init__("BAAI/bge-multilingual-gemma2", model_kwargs={"torch_dtype": torch.float16})
+#
+#     def predict(self, pairs):
+#         instruction = 'Given a web search query, retrieve relevant passages that answer the query.'
+#         prompt = f'<instruct>{instruction}\n<query>'
+#         # Compute the query and document embeddings
+#         query_embeddings = self.encode([p[0] for p in pairs], prompt=prompt)
+#         doc_embeddings = self.encode([p[1] for p in pairs])
+#         # Compute the cosine similarity between the query and document embeddings
+#         similarities = self.similarity(query_embeddings, doc_embeddings)
+#         return similarities.tolist()
 
 
 class TextEmbeddingGecko:
