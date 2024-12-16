@@ -4,7 +4,7 @@ from torch import Tensor
 import logging
 from pathlib import Path
 from encoders import BAAILLMEmbedder, AllMiniLML6V2, TextEmbeddingGecko, MultilingualEmbeddingGecko, TextMultimodalEmbeddingGecko
-PROJECT_ROOT_DIR = str(Path(__file__).parent.parent.parent) #set project root directory
+PROJECT_ROOT_DIR = str(Path(__file__).parent) #set project root directory
 
 
 class TextEmbeddings(Embeddings):

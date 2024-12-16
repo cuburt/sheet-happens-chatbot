@@ -8,11 +8,8 @@ import os
 from sentence_transformers import SentenceTransformer, CrossEncoder, util
 import logging
 import torch
-from torch import Tensor
-import torch.nn.functional as F
-from transformers import AutoTokenizer, AutoModel
 from sklearn.metrics.pairwise import cosine_similarity
-PROJECT_ROOT_DIR = str(Path(__file__).parent.parent.parent) #set project root directory
+PROJECT_ROOT_DIR = str(Path(__file__).parent) #set project root directory
 
 
 class EmbedRequest:

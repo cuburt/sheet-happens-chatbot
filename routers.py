@@ -8,7 +8,7 @@ from semantic_router import Route
 from semantic_router.encoders import BaseEncoder, HuggingFaceEncoder
 from semantic_router.layer import RouteLayer
 from encoders import TextEmbeddingGecko, BAAICrossEncoder, BAAILLMEmbedder
-PROJECT_ROOT_DIR = str(Path(__file__).parent.parent.parent)  # set project root directory
+PROJECT_ROOT_DIR = str(Path(__file__).parent)  # set project root directory
 
 
 def read_api_key(service_provider):

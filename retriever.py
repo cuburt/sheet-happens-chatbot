@@ -7,7 +7,7 @@ from langchain_core.retrievers import BaseRetriever, Document
 from langchain_community.document_transformers import LongContextReorder
 from langchain_community.vectorstores import FAISS
 from encoders import MsMarcoMiniLML6V2, BAAILLMEmbedder, BAAICrossEncoder
-PROJECT_ROOT_DIR = str(Path(__file__).parent.parent.parent)
+PROJECT_ROOT_DIR = str(Path(__file__).parent)
 
 
 def sort_documents_by_score(documents: List[Document], scores: List[Tuple[float, str]]) -> List[Document]:

@@ -9,7 +9,7 @@ from typing import Any, List, Mapping, Optional, Dict
 from pathlib import Path
 from langchain_core.callbacks.manager import CallbackManagerForLLMRun
 from langchain.llms.base import LLM
-PROJECT_ROOT_DIR = str(Path(__file__).parent.parent)  # set project root directory
+PROJECT_ROOT_DIR = str(Path(__file__).parent)  # set project root directory
 
 
 class GoogleRequest:
@@ -21,7 +21,7 @@ class GoogleRequest:
             if model_id not in google_models:
                 return f"Sorry {model_id} is not currently supported."
 
-            api_key_path = "scripts/.google_api_key.txt"
+            api_key_path = ".google_api_key.txt"
             if platform.system() == 'Windows':
                 api_key_path = api_key_path.split('/')
                 api_key_path = os.path.join(PROJECT_ROOT_DIR, *api_key_path)
@@ -49,7 +49,7 @@ class NvidiaRequest:
 
             url = "https://integrate.api.nvidia.com/v1/chat/completions"
 
-            api_key_path = "scripts/.nvidia_api_key.txt"
+            api_key_path = ".nvidia_api_key.txt"
             if platform.system() == 'Windows':
                 api_key_path = api_key_path.split('/')
                 api_key_path = os.path.join(PROJECT_ROOT_DIR, *api_key_path)

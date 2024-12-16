@@ -39,7 +39,7 @@ def convert_bytes(num):
         num /= 1024.0
 
 
-PROJECT_ROOT_DIR = str(Path(__file__).parent.parent)
+PROJECT_ROOT_DIR = str(Path(__file__).parent)
 
 
 def is_file_too_big(file_path, max):

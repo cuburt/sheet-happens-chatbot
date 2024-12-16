@@ -3,7 +3,7 @@ import pandas as pd
 from  pandas.errors import EmptyDataError
 from pathlib import Path
 import os
-PROJECT_ROOT_DIR = str(Path(__file__).parent.parent)
+PROJECT_ROOT_DIR = str(Path(__file__).parent)
 
 
 class Session:

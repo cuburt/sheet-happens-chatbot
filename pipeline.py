@@ -1,9 +1,12 @@
 from pathlib import Path
 from chain import Chain
 import threading
+import os
 from langchain_community.document_loaders import PyPDFLoader
-PROJECT_ROOT_DIR = str(Path(__file__).parent.parent.parent) #set project root directory
-
+# Directory to save uploaded files
+PROJECT_ROOT_DIR = str(Path(__file__).parent)
+UPLOAD_FOLDER = "data/uploads"
+os.makedirs(os.path.join(PROJECT_ROOT_DIR, UPLOAD_FOLDER), exist_ok=True)
 
 class ModelPipeline: 
     def __init__(self):
@@ -26,12 +29,16 @@ class ModelPipeline:
         """Model Pipeline: Load Data, Preprocess Data, Form Causality Graph, Model Probability"""
         try:
             if not self.ready:
-                raise Exception("Endpoint not ready. Please wait...")
+                raise Exception("Pipeline not ready. Please wait...")
             pages = []
             attached_text = ""
             for file in files:
+                file_path = os.path.join(PROJECT_ROOT_DIR, UPLOAD_FOLDER, file.name)
+                print("FILEPATH: ", file_path)
+                with open(file_path, "wb") as f:
+                    f.write(file.read())
                 # Read PDF content into PyPDFLoader
-                loader = PyPDFLoader((file))
+                loader = PyPDFLoader(file_path)
                 pages = loader.load_and_split()
             if pages:
                 attached_text = ''.join([page.page_content for page in pages])
