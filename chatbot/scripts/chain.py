@@ -49,8 +49,7 @@ class Chain:
         # retriever.router = SemanticRouter()
         self.gemini_custom_chain = self.build_qa_chain(self.gemini, IQPromptTemplate().prompt, retriever)
         self.llama_custom_chain = self.build_qa_chain(self.llama, IQPromptTemplate().prompt, retriever)
-        print("chains built!")
-
+        self.attached_text = ""
         # except Exception as e:
         #     raise Exception(str(e))
 
@@ -106,7 +105,7 @@ class Chain:
         else:
             response = self.run_qa_chain(
                 qa_chain=eval(f"self.{llm}_custom_chain"),
-                query=query,
+                query=f"{query} \n File: \n {self.attached_text}",
                 session_id=session_id if session_id else self.default_session_id)
             print(response)
             source_docs = [(x.page_content, x.metadata['source']) for x in response['context']]
@@ -117,4 +116,5 @@ class Chain:
             start = time.time()
             self.session_manager.add_to_conversations(message_id=message_id, session_id=session_id, message=str(query), response=str(response["answer"]))
             logging.info(f"BQUpdate RT: {(time.time() - start):.4f}")
+
         return message_id, response["answer"].encode("utf-8"), source_docs

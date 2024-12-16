@@ -28,10 +28,14 @@ class ModelPipeline:
             if not self.ready:
                 raise Exception("Endpoint not ready. Please wait...")
             pages = []
+            attached_text = ""
             for file in files:
                 # Read PDF content into PyPDFLoader
                 loader = PyPDFLoader((file))
                 pages = loader.load_and_split()
+            if pages:
+                attached_text = ''.join([page.page_content for page in pages])
+                self.chain.attached_text = attached_text
             res = self.chain.vectorstore.insert_docs(pages)
             return {"ids": res}
         except Exception as e:

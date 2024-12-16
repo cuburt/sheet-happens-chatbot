@@ -40,7 +40,7 @@ class RetrieverFactory(BaseRetriever):
         # logging.info(f"Routed to {route} chain.")
         # logging.info(f"Router RT: {(time.time() - start):.4f}")
         #
-        # if not route:
+        # if not route or route == "valid":
         #     # route can be replaced by None self.rerouter.to_reroute() == False
         #     return []
 

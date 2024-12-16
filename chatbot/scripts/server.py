@@ -51,6 +51,8 @@ async def upload_files(files: list[UploadFile] = File(...)):
     for file in files:
         # Save each file to the upload folder
         file_path = os.path.join(PROJECT_ROOT_DIR, UPLOAD_FOLDER, file.filename)
+        with open(file_path, "wb") as f:
+            f.write(await file.read())
         uploaded_files.append(file_path)
     model_pipeline_obj.upload_data(uploaded_files)
     return JSONResponse(

@@ -88,19 +88,19 @@ class BAAILLMEmbedderRouter(BaseEncoder):
 class SemanticRouter:
     def __init__(self):
         try:
-            valid_requests_sheet = "data/valid_requests.csv"
-            try:
-                valid_df = pd.read_csv(os.path.join(PROJECT_ROOT_DIR, *valid_requests_sheet.split('/')))
-                valid_requests = Route(
-                    name="valid",
-                    utterances=[str(v) for v in valid_df["query"].values])
-            except:
-                valid_requests = Route(
-                    name="valid",
-                    utterances=["hey"])
-            routes = [valid_requests]
+            tabular_requests_sheet = "data/tabular_requests.csv"
+            tabular_df = pd.read_csv(os.path.join(PROJECT_ROOT_DIR, *tabular_requests_sheet.split('/')))
+            tabular = Route(
+                name="tabular",
+                utterances=[str(v) for v in tabular_df["query"].values])
 
-            encoder = BAAILLMEmbedderRouter()
+            valid_requests = Route(
+                name="valid",
+                utterances=["hey"])
+
+            routes = [valid_requests, tabular]
+
+            encoder = MsMarcoMiniLML6V2Router()
             self.routelayer = RouteLayer(encoder=encoder, routes=routes)
             logging.info("Router successfully initialised.")
         except Exception as e:
