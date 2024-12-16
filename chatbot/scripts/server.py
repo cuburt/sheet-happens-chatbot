@@ -42,7 +42,7 @@ def generate(model: str, request: dict, session_id: Optional[str] = Query(None))
 # Directory to save uploaded files
 PROJECT_ROOT_DIR = str(Path(__file__).parent.parent)
 UPLOAD_FOLDER = "data/uploads"
-os.makedirs(UPLOAD_FOLDER, exist_ok=True)
+os.makedirs(os.path.join(PROJECT_ROOT_DIR, UPLOAD_FOLDER), exist_ok=True)
 
 @router.post("/upload", tags=["sheet-happens"])
 async def upload_files(files: list[UploadFile] = File(...)):

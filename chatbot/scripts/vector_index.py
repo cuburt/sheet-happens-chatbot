@@ -106,7 +106,7 @@ class FAISSstore:
 
         else:
             # Initialize FAISS index with the dimension of the embeddings
-            embedding_dim = 128  # Replace with your embedding dimension
+            embedding_dim = 384  # Replace with your embedding dimension
             index = faiss.IndexFlatL2(embedding_dim)
 
             # Create an in-memory docstore

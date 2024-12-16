@@ -101,6 +101,7 @@ class Agent:
         print(session_id)
         endpoint = f"{llm}/generate?session_id={session_id}"
         res = self.agent_adapter.post(payload=payload, endpoint=endpoint)
+        print(res)
         response = res['data']['prediction']
         return response.get('id'), response.get('answer'), response.get('source_documents')
 
@@ -218,12 +219,6 @@ if __name__ == "__main__":
         if uploaded_files:
             with st.spinner("Sending file..."):
                 response = send_files_to_api(uploaded_files, "http://127.0.0.1:8080/sheet-happens/upload")
-            # if response.status_code == 200:
-            #     st.success("Files sent successfully!")
-            #     st.write("Response:", response.json())  # Assuming the API returns JSON
-            # else:
-            #     st.error(f"Failed to send files. Status code: {response.status_code}")
-            #     st.write("Response:", response.text)
 
         if "sources" not in st.session_state:
             st.session_state.sources = []
@@ -266,7 +261,7 @@ if __name__ == "__main__":
         # Accept user input
         res = []
 
-        query = st.chat_input(disabled=is_query_disabled())
+        query = st.chat_input()
 
         if query or action1 or action2 or action3 or action4:
 

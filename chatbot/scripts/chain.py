@@ -45,8 +45,7 @@ class Chain:
 
         retriever = RetrieverFactory(vectorstore=self.vectorstore.vectorstore,
                                       k=3,
-                                      skip_longcontext_reorder=False,
-                                      search_type="mmr")
+                                      skip_longcontext_reorder=False)
         # retriever.router = SemanticRouter()
         self.gemini_custom_chain = self.build_qa_chain(self.gemini, IQPromptTemplate().prompt, retriever)
         self.llama_custom_chain = self.build_qa_chain(self.llama, IQPromptTemplate().prompt, retriever)
@@ -68,7 +67,7 @@ class Chain:
             except Exception as e:
                 logging.warning(str(e))
             self.chat_history[session_id] = ConversationBufferWindowMemory(buffer_size=self.memory_window)
-            for entry in reversed(list(history)):
+            for entry in eval(history.to_json(orient='records')):
                 self.chat_history[session_id].add_user_message(entry["message"])
                 self.chat_history[session_id].add_ai_message(entry["response"])
         return self.chat_history[session_id]
@@ -93,7 +92,6 @@ class Chain:
         Retriever's function. can be used in function calling or as agent tool
         """
         try:
-            print("huh")
             return qa_chain.invoke({"input": query}, config={"configurable": {"session_id": session_id}})
         except Exception as e:
             raise Exception(str(e))
