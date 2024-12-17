@@ -62,10 +62,12 @@ A format instruction can be included to force the model to generate the response
 Another strategy that isnt implemented is by appending few shot samples. This can be useful when working with base models since theyre not fine tuned to output in a certain way. Or in binary deterministic tasks such as image recognition, where a sample image of a person or thing can be used as a sample to compare the input with.
 
 ### Points of improvements
-A CPU or MLX (Apple Silicon) inference pipeline for a local LLM or encoder  can be implemented. 
+- A CPU or MLX (Apple Silicon) inference pipeline for a local LLM or encoder  can be implemented. 
 
-Langchain Tools and output parser or function calling can be implemented to integrate dataset manipulation based on LLM’s generated response.
+- Langchain Tools and output parser or function calling can be implemented to integrate dataset manipulation based on LLM’s generated response.
 
-A semantic router can be implemented to support multiple vectorstores or to introduce a safety layer. It can also be used to route a query or response to a function.
+- A semantic router can be implemented to support multiple vectorstores or to introduce a safety layer. It can also be used to route a query or response to a function.
 
-A better prompt template can be implemented.
+- A better prompt template can be implemented.
+
+- Data storage can be in BigQuery or with a relational database like PostgreSQL or a lightweight sqlite
