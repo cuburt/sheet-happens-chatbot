@@ -24,7 +24,8 @@ RUN apt-get -y update; apt-get -y install \
   nano \
   npm \
   tesseract-ocr \
-  libtesseract-dev
+  libtesseract-dev \
+  poppler-utils
 
 RUN cd streamlit_feedback/frontend && npm install react-scripts --save
 RUN cd streamlit_feedback/frontend && npm run build
