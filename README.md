@@ -7,6 +7,8 @@
 - to reset session, reenter http://localhost:8080 without session id in your browser.
 - Also deployed at https://sheet-happens-137134699526.us-central1.run.app
 
+*Note: To reset conversation, just create another session by changing some details in the credential form. To go to the form, open this link https://sheet-happens-137134699526.us-central1.run.app without session id*
+
 ### Design
 #### Document Preprocessing and Indexing
  - UnstructuredPDFLoader from Langchain.document_loaders is used to read the uploaded PDF files.
@@ -29,7 +31,7 @@
  - All data is saved as a dataset in the local directory.
 
 ### Challenges
-In RAG systems, many components are working together. So there are many components that can be fail and can be improved on.  Its a challenge to find the optimal combination. A different loader or chunking method might work better or bigger encoder might be better, or it could be the LLM that can be worked on.
+In RAG systems, many components are working together. So there are many components that can fail and can be improved on.  Its a challenge to find the optimal combination. A different loader or chunking method might work better or bigger encoder might be better, or it could be the LLM that can be worked on.
 Prompt engineering is also a challenge. since LLMs are generative, its hard to get a consistent result even with controllable inference parameters. for now, a simple prompt template is implemented. 
 
 ### Solutions
