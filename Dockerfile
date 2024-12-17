@@ -23,7 +23,8 @@ RUN apt-get -y update; apt-get -y install \
   ca-certificates \
   nano \
   npm \
-  tesseract
+  tesseract-ocr \
+  libtesseract-dev
 
 RUN cd streamlit_feedback/frontend && npm install react-scripts --save
 RUN cd streamlit_feedback/frontend && npm run build
