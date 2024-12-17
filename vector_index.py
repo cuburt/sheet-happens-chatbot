@@ -1,5 +1,4 @@
 import os
-import logging
 import threading
 import platform
 from typing import List, Dict
@@ -9,6 +8,7 @@ from langchain_community.vectorstores import FAISS
 from langchain.embeddings import FakeEmbeddings
 from langchain.docstore.in_memory import InMemoryDocstore
 import faiss
+from log import logger
 from text_embeddings import TextEmbeddings
 
 
@@ -49,24 +49,24 @@ def is_file_too_big(file_path, max):
     else:
         dir_path = os.path.join(PROJECT_ROOT_DIR, file_path)
     size = sum([os.path.getsize(file) for file in os.scandir(dir_path)])
-    logging.info(f"{file_path}'s size in byte is {size}")
+    logger.info(f"{file_path}'s size in byte is {size}")
     return size >= max
 
 
 class FAISSstore:
     def __init__(self, docs: Dict[str, List[Document]]=None, db_dir: str=None, db_file: str=None, model: str="AllMiniLML6V2", max_filesize_bytes:float=0.0, insert_batch_size:int=100):
-        logging.info(f"Initialising {db_file} vectorstore...")
+        logger.info(f"Initialising {db_file} vectorstore...")
         vectorstore_dir = os.path.join(PROJECT_ROOT_DIR, db_dir)
         if not os.path.exists(vectorstore_dir):
             os.mkdir(vectorstore_dir)
 
         self.local_dir = os.path.join(PROJECT_ROOT_DIR, db_dir, f"{db_file}-{model}")
         self.vectorstore: FAISS
-        if docs and "documents" in docs and not docs["documents"] and db_dir and db_file:
+        if not docs and db_dir and db_file:
             try:
                 if not os.path.exists(self.local_dir):
                     # vectorstore directory
-                    vectorestore_folder = os.path.join(str(Path(__file__).parent.parent.parent), db_dir)
+                    vectorestore_folder = os.path.join(PROJECT_ROOT_DIR, db_dir)
                     candidate_vectorstores = [os.path.join(vectorestore_folder, dir) for dir in os.listdir(vectorestore_folder) if db_file in dir]
                     assert candidate_vectorstores, f"No existing vectorstore for {db_file}."
                     self.local_dir = get_most_recently_updated_file(candidate_vectorstores)
@@ -75,14 +75,14 @@ class FAISSstore:
                 else:
                     self.embed_model = TextEmbeddings(model)
             except AssertionError as e:
-                logging.error(str(e))
+                logger.error("vector_index.py @ __init__() " + str(e))
 
             try:
                 self.vectorstore = FAISS.load_local(folder_path=self.local_dir, embeddings=self.embed_model, allow_dangerous_deserialization=True)
             except Exception as e:
-                logging.warning(str(e))
+                logger.warning("vector_index.py @ __init__() " + str(e))
                 self.vectorstore = FAISS.load_local(folder_path=self.local_dir, embeddings=self.embed_model)
-            logging.info("Vectorstore successfully loaded.")
+            logger.info("Vectorstore successfully loaded.")
 
         elif docs and "documents" in docs and docs["documents"] and not is_file_too_big(docs["filepath"], max_filesize_bytes):
             self.embed_model = TextEmbeddings(model)
@@ -90,16 +90,16 @@ class FAISSstore:
             if not os.path.exists(self.local_dir):
                 os.mkdir(self.local_dir)
             self.vectorstore.save_local(folder_path=self.local_dir)
-            logging.info(f"VECTORSTORE saved at: {self.local_dir}\nFileSize: {convert_bytes(sum([os.path.getsize(file) for file in os.scandir(self.local_dir)]))}")
+            logger.info(f"VECTORSTORE saved at: {self.local_dir}\nFileSize: {convert_bytes(sum([os.path.getsize(file) for file in os.scandir(self.local_dir)]))}")
 
         elif docs and "documents" in docs and docs["documents"] and is_file_too_big(docs["filepath"], max_filesize_bytes):
             self.embed_model = TextEmbeddings(model)
-            logging.info("Asynchronous vectorstore builder initialised.")
+            logger.info("Asynchronous vectorstore builder initialised.")
             self.vectorstore = FAISS.from_documents(docs["documents"][:insert_batch_size], self.embed_model)
             if not os.path.exists(self.local_dir):
                 os.mkdir(self.local_dir)
             self.vectorstore.save_local(folder_path=self.local_dir)
-            logging.info(f"Initial vectorstore saved at: {self.local_dir}\nFileSize: {convert_bytes(sum([os.path.getsize(file) for file in os.scandir(self.local_dir)]))}\nAsynchronous update begins...")
+            logger.info(f"Initial vectorstore saved at: {self.local_dir}\nFileSize: {convert_bytes(sum([os.path.getsize(file) for file in os.scandir(self.local_dir)]))}\nAsynchronous update begins...")
             # Allows parallel inference and vectorstore build.
             insert_docs_thread = threading.Thread(target=self.insert_docs, daemon=True, name="insert_docs", args=[docs["documents"][insert_batch_size:], insert_batch_size])
             insert_docs_thread.start()
@@ -132,7 +132,7 @@ class FAISSstore:
             if self.local_dir:
                 self.vectorstore.save_local(str(self.local_dir))
         except Exception as e:
-            logging.error(str(e))
+            logger.error("vector_index.py @ insert_dict() " + str(e))
             res = str(e)
 
         return res
@@ -143,15 +143,15 @@ class FAISSstore:
             # Process the list in batches of 5
             for i in range(0, len(docs), insert_batch_size):
                 batch = docs[i:i + insert_batch_size]
-                logging.info(f"Embedding {len(batch)} documents...")
+                logger.info(f"Embedding {len(batch)} documents...")
                 # Process each batch (replace this comment with your processing logic)
                 res = self.vectorstore.add_documents(batch)
                 responses.append(res)
-                logging.info(f"Documents embeddings for: {res}")
+                logger.info(f"Documents embeddings for: {res}")
                 if self.local_dir:
                     self.vectorstore.save_local(str(self.local_dir))
-                    logging.info(
+                    logger.info(
                         f"VECTORSTORE updated at: {self.local_dir}\nFileSize: {convert_bytes(sum([os.path.getsize(file) for file in os.scandir(self.local_dir)]))}")
             return responses
         except Exception as e:
-            logging.error(str(e))
+            logger.error("vector_index.py @ insert_docs() " + str(e))

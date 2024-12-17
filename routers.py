@@ -1,5 +1,4 @@
 import os
-import logging
 import platform
 from pathlib import Path
 from typing import List, Optional, Any
@@ -8,6 +7,7 @@ from semantic_router import Route
 from semantic_router.encoders import BaseEncoder, HuggingFaceEncoder
 from semantic_router.layer import RouteLayer
 from encoders import TextEmbeddingGecko
+from log import logger
 PROJECT_ROOT_DIR = str(Path(__file__).parent)  # set project root directory
 
 
@@ -102,9 +102,9 @@ class SemanticRouter:
 
             encoder = MsMarcoMiniLML6V2Router()
             self.routelayer = RouteLayer(encoder=encoder, routes=routes)
-            logging.info("Router successfully initialised.")
+            logger.info("Router successfully initialised.")
         except Exception as e:
-            raise Exception(str(e))
+            raise Exception("router.py @ __init__() " + str(e))
 
     def __call__(self, prompt):
         return self.routelayer(prompt).name

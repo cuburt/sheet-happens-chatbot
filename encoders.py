@@ -5,10 +5,8 @@ import platform
 import requests
 from pathlib import Path
 import os
-from sentence_transformers import SentenceTransformer, CrossEncoder, util
-import logging
-import torch
-from sklearn.metrics.pairwise import cosine_similarity
+from sentence_transformers import SentenceTransformer, CrossEncoder
+from log import logger
 PROJECT_ROOT_DIR = str(Path(__file__).parent) #set project root directory
 
 
@@ -29,7 +27,7 @@ class EmbedRequest:
             url = f"https://{api_endpoint}/v1/projects/{project_id}/locations/{region}/publishers/google/models/{model_id}:predict"
             return requests.post(url=url, headers=headers, data=json.dumps(data)).json()
         except Exception as e:
-            logging.error(str(e))
+            logger.error(str(e))
 
 
 class MsMarcoMiniLML6V2(CrossEncoder):
@@ -45,7 +43,7 @@ class AllMiniLML6V2(SentenceTransformer):
 # class BAAILLMEmbedder(SentenceTransformer):
 #     def __init__(self):
 #         device = "cuda" if torch.cuda.is_available() else "cpu"
-#         logging.info(f"Running on {device}")
+#         logger.info(f"Running on {device}")
 #         model_path = os.path.join(PROJECT_ROOT_DIR, 'models', 'BAAI', 'llm-embedder')
 #         if not os.path.exists(os.path.join(model_path, "config.json")):
 #             model_path = "BAAI/llm-embedder"
@@ -103,7 +101,7 @@ class TextEmbeddingGecko:
             assert response, "No Response from Google Embeddings"
             return response
         except Exception as e:
-            logging.error(str(e))
+            logger.error(str(e))
 
     def predict(self, pairs):
         queries, docs = [p[0] for p in pairs], [p[1] for p in pairs]
@@ -139,7 +137,7 @@ class MultilingualEmbeddingGecko:
             assert response, "No Response from Google Embeddings"
             return response
         except Exception as e:
-            logging.error(str(e))
+            logger.error(str(e))
 
     def predict(self, pairs):
         queries, docs = [p[0] for p in pairs], [p[1] for p in pairs]
@@ -164,4 +162,4 @@ class TextMultimodalEmbeddingGecko:
             assert response, "No Response from Google Embeddings"
             return response
         except Exception as e:
-            logging.error(str(e))
+            logger.error(str(e))

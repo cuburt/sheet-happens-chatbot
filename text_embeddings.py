@@ -1,8 +1,8 @@
 from typing import List
 from langchain.schema.embeddings import Embeddings
 from torch import Tensor
-import logging
 from pathlib import Path
+from log import logger
 from encoders import AllMiniLML6V2, TextEmbeddingGecko, MultilingualEmbeddingGecko, TextMultimodalEmbeddingGecko
 PROJECT_ROOT_DIR = str(Path(__file__).parent) #set project root directory
 
@@ -20,7 +20,7 @@ class TextEmbeddings(Embeddings):
                 embeddings = self.model.encode(text)
             return embeddings.tolist()
         except Exception as e:
-            logging.error(str(e))
+            logger.error("text_embeddings.py @ embed_query() " + str(e))
 
     def embed_documents(self, texts: List[str]) -> List[List[Tensor]]:
         try:
@@ -30,4 +30,4 @@ class TextEmbeddings(Embeddings):
                 embeddings = [self.model.encode(text) for text in texts]
             return embeddings
         except Exception as e:
-            logging.error(str(e))
+            logger.error(str(e))

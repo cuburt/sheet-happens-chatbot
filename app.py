@@ -1,50 +1,13 @@
 import streamlit as st
 import streamlit.components.v1 as components
-import logging
-import requests
-import json
-import pandas as pd
-from  pandas.errors import EmptyDataError
 from streamlit_feedback import streamlit_feedback
 import datetime
 import base64
 from pathlib import Path
-import os
+from log import logger
 from pipeline import ModelPipeline
+from session import session_handler, feedback_handler, history_handler
 PROJECT_ROOT_DIR = str(Path(__file__).parent)
-
-
-class DatasetHandler:
-    def __init__(self, filepath):
-        self.filepath = os.path.join(PROJECT_ROOT_DIR, filepath)
-        self.dataset = self.load_from_csv()
-
-    def load_from_csv(self):
-        try:
-            return pd.read_csv(self.filepath)
-        except (FileNotFoundError, EmptyDataError):
-            return pd.DataFrame(columns=["created_on", "session_id", "message", "response", "message_id", "query", "is_satisfactory", "comment"])
-
-    def save_to_csv(self):
-        self.dataset.to_csv(self.filepath, index=False)
-
-    def add_row(self, row):
-        self.dataset = pd.concat([self.dataset, pd.DataFrame([row])], ignore_index=True)
-        self.save_to_csv()
-
-    def query(self, filter_func):
-        return self.dataset[filter_func(self.dataset)]
-
-    def is_session_exist(self, session_id):
-        return not self.dataset[self.dataset["session_id"] == session_id].empty
-
-    def get_session_history(self, session_id):
-        return self.dataset[self.dataset["session_id"] == session_id].sort_values(by="created_on")
-
-# Initialize datasets
-feedback_handler = DatasetHandler("data/session/feedback.csv")
-session_handler = DatasetHandler("data/session/session.csv")
-history_handler = DatasetHandler("data/session/chat_history.csv")
 
 
 def get_session_history(session_id):
@@ -64,35 +27,15 @@ def get_session_history(session_id):
                                                            "text": last_feedback["comment"]}})
 
 
-class Adapter:
-    def post(self, payload, headers=None, endpoint=''):
-        try:
-            if headers:
-                result = requests.post(self.url + endpoint, headers=headers, data=payload)
-            else:
-                result = requests.post(self.url + endpoint, data=payload)
-            return result.json()
-        except Exception:
-            return {}
-
-    def get(self, payload, headers, endpoint=''):
-        try:
-            result = requests.get(self.url + endpoint, headers=headers, data=payload)
-            return result.json()
-        except Exception:
-            return {}
-
-
 class Agent:
     def __init__(self):
         self.pipeline_obj = ModelPipeline()
 
-    def upload_docs(self, uploaded_files):
-        response = self.pipeline_obj.upload_data(uploaded_files)
-        return response["ids"]
+    def process_document(self, uploaded_files):
+        self.pipeline_obj.process_document(uploaded_files)
 
-    def __call__(self, llm, query, enable_rag, session_id, enable_code_interpreter=False):
-        res = self.pipeline_obj.generate_prediction(llm, query, enable_rag=enable_rag, session_id=session_id)
+    def __call__(self, llm, params, query, enable_rag, session_id, enable_code_interpreter=False):
+        res = self.pipeline_obj.generate_prediction(llm, params, query, enable_rag=enable_rag, session_id=session_id)
         response = res['prediction']
         return response.get('id'), response.get('answer'), response.get('source_documents')
 
@@ -166,8 +109,8 @@ def load_agents():
 
 if __name__ == "__main__":
     agent = load_agents()
-    models = ["palm", "gemini", "llama", "gpt"]
-    logging.info("starting app...")
+    models = ["gemini_pro", "gemini_flash", "gemma"]
+    logger.info("starting app...")
     st.title("Sheet-Happens Chatbot")
 
     if "session_id" not in st.query_params or not session_handler.is_session_exist(st.query_params.session_id):
@@ -179,28 +122,31 @@ if __name__ == "__main__":
 
     else:
         col1, col2, col3, col4 = st.columns(4)
-        action1 = col1.button('Get started with Iris')
-        action2 = col2.button('Invoke Foundry from within Iris')
-        action3 = col3.button('Enable Internationalization')
-        action4 = col4.button('Embed Cordova application')
+        action1 = col1.button("What was the quarterly dividend declared per share in fiscal year 2023?")
+        action2 = col2.button("How much was spent on share repurchases in fiscal year 2023?")
+        action3 = col3.button("What was the total dividend per share for fiscal year 2023?")
+        action4 = col4.button("Which segment generated the highest revenue in fiscal year 2023?")
 
         sidetab0, sidetab1, sidetab2 = st.sidebar.tabs(["File Upload", "Source Documents", "Settings"])
 
         with sidetab0:
-            uploaded_files = st.file_uploader("Upload a file...", type=["pdf"], accept_multiple_files=True)
+            uploaded_files = st.file_uploader("Upload your PDF here", type=["pdf"], accept_multiple_files=True, key='uploaded_files')
+            spinner_placeholder = st.empty()
 
         with sidetab1:
             res_placeholder = st.empty()
 
         with sidetab2:
             llm = st.radio("Set LLM", models, index=1, horizontal=True)
+            temperature = st.slider("Temperature", min_value=0.0, max_value=1.0, step=0.01, value=1.0)
+            top_p = st.slider("TopP", min_value=0.0, max_value=1.0, step=0.01, value=1.0)
+            max_output_tokens = st.number_input("MaxOutputTokens", step=1, value=2048)
             enable_rag = st.checkbox('Enable RAG', value=True)
             enable_code_interpreter = st.checkbox('Enable Code Interpreter', value=False)
             st.caption("Note: Enabling Code Interpreter will disable RAG and non-RAG agent.")
 
-        if uploaded_files:
-            with st.spinner("Sending file..."):
-                response = agent.upload_docs(uploaded_files)
+        if "uploaded_files_previous" not in st.session_state:
+            st.session_state["uploaded_files_previous"] = []
 
         if "sources" not in st.session_state:
             st.session_state.sources = []
@@ -241,6 +187,19 @@ if __name__ == "__main__":
         build_sources(st.session_state.sources)
 
         # Accept user input
+
+        if uploaded_files and uploaded_files != st.session_state["uploaded_files_previous"]:
+            if len(uploaded_files) > len(st.session_state["uploaded_files_previous"]):
+                with spinner_placeholder:
+                    with st.spinner("Processing file..."):
+                        agent.process_document([f for f in uploaded_files if f not in st.session_state["uploaded_files_previous"]])
+                    st.info("File(s) added.")
+            elif len(uploaded_files) < len(st.session_state["uploaded_files_previous"]):
+                with spinner_placeholder:
+                    st.info("File(s) removed.")
+
+            st.session_state["uploaded_files_previous"] = uploaded_files
+
         res = []
 
         query = st.chat_input()
@@ -248,13 +207,13 @@ if __name__ == "__main__":
         if query or action1 or action2 or action3 or action4:
 
             if action1:
-                query = "How to get started with Iris?"
+                query = "What was the quarterly dividend declared per share in fiscal year 2023?"
             elif action2:
-                query = "How to invoke Foundry from within Iris?"
+                query = "How much was spent on share repurchases in fiscal year 2023?"
             elif action3:
-                query = "How to enable Internationalization?"
+                query = "What was the total dividend per share for fiscal year 2023?"
             elif action4:
-                query = "How to embed a Cordova application?"
+                query = "Which segment generated the highest revenue in fiscal year 2023?"
 
             # Add user message to chat history
             st.session_state.messages.append({"author": "user", "content": query.replace('\'','')})
@@ -266,10 +225,11 @@ if __name__ == "__main__":
             with st.chat_message("assistant"):
                 message_placeholder = st.empty()
                 # (self, return_references, query, task='instruct', target_lang: str='', llm: str='codey'):
+                params = {"temperature": temperature, "max_output_tokens": max_output_tokens, "top_p": top_p}
                 if enable_rag:
-                    message_id, response, res = agent(llm=llm, query=query, enable_rag=True, session_id=st.query_params.session_id)
+                    message_id, response, res = agent(llm=llm, params=params, query=query, enable_rag=True, session_id=st.query_params.session_id)
                 else:
-                    message_id, response, res = agent(llm=llm, query=query, enable_rag=False, session_id=st.query_params.session_id)
+                    message_id, response, res = agent(llm=llm, params=params, query=query, enable_rag=False, session_id=st.query_params.session_id)
 
 
                 # Display q&a response

@@ -22,7 +22,8 @@ RUN apt-get -y update; apt-get -y install \
   jq \
   ca-certificates \
   nano \
-  npm
+  npm \
+  tesseract
 
 RUN cd streamlit_feedback/frontend && npm install react-scripts --save
 RUN cd streamlit_feedback/frontend && npm run build

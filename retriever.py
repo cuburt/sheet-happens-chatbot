@@ -1,5 +1,4 @@
 import time
-import logging
 from pathlib import Path
 from typing import List, Any, Tuple, Dict
 from langchain.callbacks.manager import CallbackManagerForRetrieverRun, AsyncCallbackManagerForRetrieverRun
@@ -7,6 +6,7 @@ from langchain_core.retrievers import BaseRetriever, Document
 from langchain_community.document_transformers import LongContextReorder
 from langchain_community.vectorstores import FAISS
 from encoders import MsMarcoMiniLML6V2
+from log import logger
 PROJECT_ROOT_DIR = str(Path(__file__).parent)
 
 
@@ -37,8 +37,8 @@ class RetrieverFactory(BaseRetriever):
 
         # start = time.time()
         # route = self.router(query)
-        # logging.info(f"Routed to {route} chain.")
-        # logging.info(f"Router RT: {(time.time() - start):.4f}")
+        # logger.info(f"Routed to {route} chain.")
+        # logger.info(f"Router RT: {(time.time() - start):.4f}")
         #
         # if not route or route == "valid":
         #     # route can be replaced by None self.rerouter.to_reroute() == False
@@ -49,34 +49,37 @@ class RetrieverFactory(BaseRetriever):
             # relevant_docs = self.vectorstores[route].vectorstore.search(query, search_type="similarity_score_threshold", search_kwargs={"score_threshold": .8, "k": self.k})
             # relevant_docs = self.vectorstores[route].vectorstore.search(query, search_type="similarity", search_kwargs={"k": self.k})
             relevant_docs = self.vectorstore.search(query, search_type=self.search_type, k=self.k)
-            logging.info(f"Bi-Encoder RT: {(time.time() - start):.4f}")
+            logger.info(f"Bi-Encoder RT: {(time.time() - start):.4f}")
             page_contents = [doc.page_content for doc in relevant_docs]
         except Exception as e:
-            logging.error(str(e))
+            logger.error("retriever.py @ _get_relevant_documents() bi-encoder rank " + str(e))
             relevant_docs, page_contents = [], []
-        print(relevant_docs)
+
         try:
             start = time.time()
             pairs = []
             for content in page_contents:
                 pairs.append([query, content])
+            assert len(pairs) > 0, "No relevant documents to rerank."
             scores = self.cross_encoder.predict(pairs)
             scored_docs = zip(scores, page_contents)
             sorted_contents = sorted(scored_docs, reverse=True)
             reranked_docs = sort_documents_by_score(relevant_docs, sorted_contents)
-            logging.info(f"Cross-Encoder RT: {(time.time() - start):.4f}")
+            logger.info(f"Cross-Encoder RT: {(time.time() - start):.4f}")
             relevant_docs = reranked_docs
+        except AssertionError as ae:
+            logger.warning(str(ae))
         except Exception as e:
-            logging.error(str(e))
+            logger.error("retriever.py @ _get_relevant_documents() cross-encoder rank " + str(e))
 
         try:
             if not self.skip_longcontext_reorder:
                 reordering = LongContextReorder()
                 start = time.time()
                 relevant_docs = reordering.transform_documents(relevant_docs)
-                logging.info(f"LC-Reranker RT: {(time.time() - start):.4f}")
+                logger.info(f"LC-Reranker RT: {(time.time() - start):.4f}")
         except Exception as e:
-            logging.error(str(e))
+            logger.error("retriever.py @ _get_relevant_documents() longcontext reorder " + str(e))
 
         return list(relevant_docs if not reranked_docs else reranked_docs)
 
