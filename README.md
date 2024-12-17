@@ -39,7 +39,7 @@ By implementing all this in Langchain, it is very easy to customise however I li
 
 ### Prompt Engineering Strategies
 A prompt template is used to structure the query, chat history, contexts, and instruction.
-the first part of the template is a premise to narrow down the LLM's parametric knowledge to or domain usecase:
+the first part of the template is a premise to narrow down the LLM's parametric knowledge to our domain usecase:
 
 *"You are a Financial Data Processing Assistant. Your role is to extract, analyze, and summarize structured or 
 unstructured financial information from a PDF document. The document may contain tabular data such as balance sheets, 
@@ -57,5 +57,15 @@ followed by a step-by-step main instruction:
 
 Then the user's query and chat history are appended.
 
-a format instruction can be included to force the model to generate the response in a certain way like in JSON.
+A format instruction can be included to force the model to generate the response in a certain way like in JSON.
 
+Another strategy that isnt implemented is by appending few shot samples. This can be useful when working with base models since theyre not fine tuned to output in a certain way. Or in binary deterministic tasks such as image recognition, where a sample image of a person or thing can be used as a sample to compare the input with.
+
+### Points of improvements
+A CPU or MLX (Apple Silicon) inference pipeline for a local LLM or encoder  can be implemented. 
+
+Langchain Tools and output parser or function calling can be implemented to integrate dataset manipulation based on LLM’s generated response.
+
+A semantic router can be implemented to support multiple vectorstores or to introduce a safety layer. It can also be used to route a query or response to a function.
+
+A better prompt template can be implemented.
