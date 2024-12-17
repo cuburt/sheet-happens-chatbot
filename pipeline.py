@@ -3,7 +3,7 @@ import threading
 from pathlib import Path
 from typing import List, Iterable
 import nltk
-from langchain_community.document_loaders import PyPDFLoader
+from langchain.document_loaders import UnstructuredPDFLoader
 from langchain.schema.document import Document
 from langchain.text_splitter import NLTKTextSplitter
 from chain import Chain
@@ -50,7 +50,7 @@ class ModelPipeline:
                     f.write(file.read())
             # Read PDF content into PyPDFLoader
             print("PDF filepath: ", file_path)
-            loader = PyPDFLoader(file_path)
+            loader = UnstructuredPDFLoader(file_path)
             pages = loader.load_and_split()
             if isinstance(pages, list):
                 docs.extend(pages)
