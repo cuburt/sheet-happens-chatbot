@@ -109,7 +109,7 @@ def load_agents():
 
 if __name__ == "__main__":
     agent = load_agents()
-    models = ["gemini_pro", "gemini_flash", "gemma"]
+    models = ["gemini_pro", "gemini_flash", "gemma", "tinyllama"]
     logger.info("starting app...")
     st.title("Sheet-Happens Chatbot")
 
@@ -137,7 +137,7 @@ if __name__ == "__main__":
             res_placeholder = st.empty()
 
         with sidetab2:
-            llm = st.radio("Set LLM", models, index=1, horizontal=True)
+            llm = st.radio("Set LLM", models, index=3, horizontal=True)
             temperature = st.slider("Temperature", min_value=0.0, max_value=1.0, step=0.01, value=1.0)
             top_p = st.slider("TopP", min_value=0.0, max_value=1.0, step=0.01, value=1.0)
             max_output_tokens = st.number_input("MaxOutputTokens", step=1, value=2048)

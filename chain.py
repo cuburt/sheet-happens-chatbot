@@ -8,7 +8,7 @@ from langchain_core.chat_history import BaseChatMessageHistory, InMemoryChatMess
 from langchain_core.messages import BaseMessage
 from langchain_core.runnables.history import RunnableWithMessageHistory
 from langchain_core.runnables import ConfigurableField
-from llm import GeminiLLM, GeminiFlashLLM, Gemma2LLM
+from llm import GeminiLLM, GeminiFlashLLM, Gemma2LLM, TinyLlamaLLM
 from prompt_template import IQPromptTemplate, DocumentParserPromptTemplate
 from retriever import RetrieverFactory
 from session import history_handler
@@ -52,6 +52,11 @@ class Chain:
                 max_output_tokens=ConfigurableField(id="max_output_tokens"),
                 top_p=ConfigurableField(id="top_p")
             )
+            self.tinyllama = TinyLlamaLLM().configurable_fields(
+                temperature=ConfigurableField(id="temperature"),
+                max_output_tokens=ConfigurableField(id="max_output_tokens"),
+                top_p=ConfigurableField(id="top_p")
+            )
             self.session_manager = history_handler
             self.memory_window = 3
             self.chat_history = {}
@@ -66,6 +71,7 @@ class Chain:
             self.gemini_pro_custom_chain = self.build_qa_chain(self.gemini_pro, IQPromptTemplate().prompt, retriever)
             self.gemini_flash_custom_chain = self.build_qa_chain(self.gemini_flash, IQPromptTemplate().prompt, retriever)
             self.gemma_custom_chain = self.build_qa_chain(self.gemma, IQPromptTemplate().prompt, retriever)
+            self.tinyllama_custom_chain = self.build_qa_chain(self.tinyllama, IQPromptTemplate().prompt, retriever)
 
         except Exception as e:
             raise Exception("chain.py at __init__()" + str(e))
